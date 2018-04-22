@@ -4,16 +4,6 @@
   grid-template-columns: 100px 1fr;
 }
 
-.Menu {
-  background: #2B1657;
-  position: relative;
-  height: 100vh;
-}
-
-.Content {
-  position: relative;
-}
-
 .App-logo {
   animation: App-logo-spin infinite 20s linear;
   height: 80px;

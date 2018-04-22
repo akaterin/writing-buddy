@@ -19,7 +19,7 @@ function createWindow () {
   win.loadURL(startUrl)
 
   // Open the DevTools.
-  //win.webContents.openDevTools()
+  win.webContents.openDevTools()
   win.maximize()
 
   // Emitted when the window is closed.
