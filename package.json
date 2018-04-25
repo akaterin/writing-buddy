@@ -3,9 +3,12 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "node-gyp": "^3.6.2",
     "react": "^16.3.2",
     "react-dom": "^16.3.2",
-    "react-scripts": "1.1.4"
+    "react-redux": "^5.0.7",
+    "react-scripts": "1.1.4",
+    "redux": "^4.0.0"
   },
   "homepage": "./",
   "main": "src/electronStarter.js",
@@ -22,6 +25,7 @@
     "electron": "^1.8.4",
     "eslint": "^4.19.1",
     "eslint-plugin-react": "^7.7.0",
-    "foreman": "^2.0.0"
+    "foreman": "^2.0.0",
+    "redux-devtools": "^3.4.1"
   }
 }
