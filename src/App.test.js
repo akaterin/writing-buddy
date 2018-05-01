@@ -1,9 +1,14 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
-import App from './App';
+import React from 'react'
+import ReactDOM from 'react-dom'
+import App from './App'
+import { mount } from 'enzyme'
+import { Provider } from 'react-redux'
+import store from './infrastructure/store'
 
 it('renders without crashing', () => {
-  const div = document.createElement('div');
-  ReactDOM.render(<App />, div);
-  ReactDOM.unmountComponentAtNode(div);
+  mount(
+    <Provider store={store}>
+      <App />
+    </Provider>
+  )
 });

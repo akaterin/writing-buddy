@@ -1,4 +1,6 @@
 .Content {
+  padding-top: 50px;
+  padding-left: 50px;
   position: relative;
   background: #F6F5FA;
 }
