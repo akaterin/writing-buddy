@@ -25,6 +25,9 @@ export class CreateStory extends Component {
       showModal: false,
       title: '',
       filename: '',
+      formValid: false,
+      titleValid: true,
+      filenameValid: true
     };
 
     this.handleOpenModal = this.handleOpenModal.bind(this);
@@ -50,13 +53,22 @@ export class CreateStory extends Component {
   }
 
   handleTitleChange(event){
-    console.log(`Setting title to: ${event.target.value}`)
     this.setState({ title: event.target.value })
+  }
+
+  validate(event){
+    const key = `${event.target.id}Valid`
+    const isValid = event.target.validity.valid
+    const formValid = this.form.checkValidity()
+    this.setState({
+      [key]: isValid,
+      formValid: formValid
+    })
   }
 
   openDialog() {
     let filename = dialog.showSaveDialog()
-    console.log(`Setting filename to: ${filename}`)
+    if( filename === undefined ) return
     this.setState({ filename: filename })
   }
 
@@ -74,26 +86,34 @@ export class CreateStory extends Component {
         >
           <DialogTitle id="form-dialog-title">Create Story</DialogTitle>
           <DialogContent>
-            <TextField
-              autoFocus
-              margin="dense"
-              id="title"
-              label="Title"
-              type="text"
-              value={this.state.title}
-              onChange={this.handleTitleChange.bind(this)}
-              fullWidth
-            />
-            <TextField
-              margin="dense"
-              id="filename"
-              label="File"
-              type="text"
-              onKeyUp={this.openDialog.bind(this)}
-              onClick={this.openDialog.bind(this)}
-              value={this.state.filename}
-              fullWidth
-            />
+            <form className='create-story-form' ref={(form) => { this.form = form; }}>
+              <TextField
+                autoFocus
+                margin="dense"
+                id="title"
+                label="Title"
+                type="text"
+                value={this.state.title}
+                onChange={this.handleTitleChange.bind(this)}
+                error={!this.state.titleValid}
+                onBlur={this.validate.bind(this)}
+                required
+                fullWidth
+              />
+              <TextField
+                margin="dense"
+                id="filename"
+                label="File"
+                type="text"
+                onKeyUp={this.openDialog.bind(this)}
+                onClick={this.openDialog.bind(this)}
+                value={this.state.filename}
+                onBlur={this.validate.bind(this)}
+                error={!this.state.filenameValid}
+                required
+                fullWidth
+              />
+            </form>
           </DialogContent>
           <DialogActions>
             <Button className="create-story-cancel-button" onClick={this.handleCloseModal}
@@ -102,6 +122,7 @@ export class CreateStory extends Component {
             </Button>
             <Button className="create-story-create-button"
               onClick={this.handleCreateStory.bind(this)}
+              disabled={!this.state.formValid}
               color="primary">
               Create
             </Button>

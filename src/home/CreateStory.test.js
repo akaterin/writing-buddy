@@ -67,12 +67,70 @@ it('adds story to store when user clicks create', () => {
     </Provider>
   )
   wrapper.find('Button.create-story-button').simulate('click')
+  wrapper.find('form.create-story-form').instance().checkValidity = () => { return true}
   wrapper.find('input#title').simulate('change', {target: { value: 'Awesome Story!'}})
   wrapper.find('Input#filename').simulate('click')
+  wrapper.find('input#filename').simulate('blur', {target: { id: 'filename', validity: { valid: true }}})
   wrapper.find('Button.create-story-create-button').simulate('click')
   const state = store.getState();
   expect(state.activeStory.title).toBe('Awesome Story!')
   expect(state.activeStory.filename).toBe('dupa.txt')
+})
+
+it('displays no errors on open', () => {
+  const wrapper = mount(<CreateStory />)
+  wrapper.find('Button.create-story-button').simulate('click')
+  const titleInput = wrapper.find('TextField#title')
+  expect(titleInput.props().error).toBe(false)
+  const filenameInput = wrapper.find('TextField#filename')
+  expect(filenameInput.props().error).toBe(false)
+})
+
+it('disables create button when form invalid', () => {
+  const wrapper = mount(<CreateStory />)
+  wrapper.find('Button.create-story-button').simulate('click')
+  expect( wrapper.find('Button.create-story-create-button').props().disabled ).toBe(true)
+
+  wrapper.find('input#title').simulate('change', {target: { value: 'Awesome Story!'}})
+  expect( wrapper.find('Button.create-story-create-button').props().disabled ).toBe(true)
+
+
+  wrapper.find('input#title').simulate('change', {target: { value: ''}})
+  wrapper.find('input#filename').simulate('change', {target: { value: 'dupa.txt'}})
+  expect( wrapper.find('Button.create-story-create-button').props().disabled ).toBe(true)
+})
+
+it('enables create button when form valid', () => {
+  const wrapper = mount(<CreateStory />)
+  wrapper.find('Button.create-story-button').simulate('click')
+  wrapper.find('form.create-story-form').instance().checkValidity = () => { return true}
+  wrapper.find('input#filename').simulate('blur', {target: { id: 'filename', validity: { valid: true }}})
+  expect( wrapper.find('Button.create-story-create-button').props().disabled ).toBe(false)
+})
+
+//JSDOM does not support validity :(
+it('validates title on blur', () => {
+  const wrapper = mount(<CreateStory />)
+  wrapper.find('Button.create-story-button').simulate('click')
+  wrapper.find('form.create-story-form').instance().checkValidity = () => { return true}
+  let titleInput = wrapper.find('input#title')
+
+  //Current version of jsdom does not support validity :(
+  titleInput.simulate('blur', {target: { id: 'title', validity: { valid: false }}})
+  titleInput = wrapper.find('TextField#title')
+  expect(titleInput.props().error).toBe(true)
+})
+
+it('validates filename on blur', () => {
+  const wrapper = mount(<CreateStory />)
+  wrapper.find('Button.create-story-button').simulate('click')
+  wrapper.find('form.create-story-form').instance().checkValidity = () => { return true}
+  let filenameInput = wrapper.find('input#filename')
+
+  //Current version of jsdom does not support validity :(
+  filenameInput.simulate('blur', {target: { id: 'filename', validity: { valid: false }}})
+  filenameInput = wrapper.find('TextField#filename')
+  expect(filenameInput.props().error).toBe(true)
 })
 
 
