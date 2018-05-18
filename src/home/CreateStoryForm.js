@@ -12,22 +12,22 @@ class CreateStoryForm extends Component {
     this.state = {
       title: '',
       filename: '',
-      formValid: false,
       titleValid: true,
       filenameValid: true
     }
   }
 
   handleCreateStory() {
+    if( !this.form.checkValidity() ) {
+      const inputs = Array.from(this.form.getElementsByTagName('input'))
+      inputs.forEach((el) => {
+        this.validateElement(el)
+      })
+      return
+    }
+
     const { title, filename } = this.state;
     this.props.onCreate({title, filename})
-    this.setState({
-      title: '',
-      filename: '',
-      formValid: false,
-      titleValid: true,
-      filenameValid: true
-    })
   }
 
   handleTitleChange(event){
@@ -35,12 +35,14 @@ class CreateStoryForm extends Component {
   }
 
   validate(event){
-    const key = `${event.target.id}Valid`
-    const isValid = event.target.validity.valid
-    const formValid = this.form.checkValidity()
+    this.validateElement(event.target)
+  }
+
+  validateElement(el){
+    const key = `${el.id}Valid`
+    const isValid = el.validity.valid
     this.setState({
       [key]: isValid,
-      formValid: formValid
     })
   }
 
@@ -87,7 +89,6 @@ class CreateStoryForm extends Component {
           </Button>
           <Button className="create-story-create-button"
             onClick={this.handleCreateStory.bind(this)}
-            disabled={!this.state.formValid}
             color="primary">
             Create
           </Button>

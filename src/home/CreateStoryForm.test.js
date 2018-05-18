@@ -3,6 +3,23 @@ import { shallow, mount } from 'enzyme'
 import { dialog } from '../electronRemote'
 import CreateStoryForm from './CreateStoryForm'
 
+var global = global;
+let validMock = jest.fn()
+let validForm = jest.fn()
+
+const defineValidity = {
+  get() {
+    return {
+      valid: validMock()
+    }
+  },
+  configurable: true
+};
+
+
+global.HTMLFormElement.prototype.checkValidity = validForm;
+Object.defineProperty(global.HTMLInputElement.prototype, 'validity', defineValidity);
+
 jest.mock('../electronRemote', () => {
   return {
     dialog: {
@@ -50,7 +67,6 @@ it('sets the filename when dialog closed', () => {
   expect(wrapper.find('Input#filename').props().value).toBe('dupa.txt')
 })
 
-// TODO remember to set validations correctly on first render
 it('displays no errors on first render', () => {
   const wrapper = mount(
     <CreateStoryForm
@@ -65,33 +81,30 @@ it('displays no errors on first render', () => {
 })
 
 it('disables create button when form invalid', () => {
+  const onCreateStub = jest.fn()
   const wrapper = mount(
     <CreateStoryForm
-      onCreate = { jest.fn() }
+      onCreate = { onCreateStub }
       onCancel = { jest.fn() }
     />
   )
-  expect( wrapper.find('Button.create-story-create-button').props().disabled ).toBe(true)
+  validForm.mockReturnValue(false)
 
-  wrapper.find('input#title').simulate('change', {target: { value: 'Awesome Story!'}})
-  expect( wrapper.find('Button.create-story-create-button').props().disabled ).toBe(true)
-
-
-  wrapper.find('input#title').simulate('change', {target: { value: ''}})
-  wrapper.find('input#filename').simulate('change', {target: { value: 'dupa.txt'}})
-  expect( wrapper.find('Button.create-story-create-button').props().disabled ).toBe(true)
+  wrapper.find('Button.create-story-create-button').simulate('click')
+  expect(onCreateStub).toHaveBeenCalledTimes(0)
 })
 
-it('enables create button when form valid', () => {
+it('enables create button when form valid and calls onCreate', () => {
+  const onCreateStub = jest.fn()
   const wrapper = mount(
     <CreateStoryForm
-      onCreate = { jest.fn() }
+      onCreate = { onCreateStub }
       onCancel = { jest.fn() }
     />
   )
-  wrapper.find('form.create-story-form').instance().checkValidity = () => { return true}
-  wrapper.find('input#filename').simulate('blur', {target: { id: 'filename', validity: { valid: true }}})
-  expect( wrapper.find('Button.create-story-create-button').props().disabled ).toBe(false)
+  validForm.mockReturnValue(true)
+  wrapper.find('Button.create-story-create-button').simulate('click')
+  expect(onCreateStub).toHaveBeenCalledTimes(1)
 })
 
 //JSDOM does not support validity :(
@@ -102,11 +115,10 @@ it('validates title on blur', () => {
       onCancel = { jest.fn() }
     />
   )
-  wrapper.find('form.create-story-form').instance().checkValidity = () => { return true}
   let titleInput = wrapper.find('input#title')
+  validMock.mockReturnValueOnce(false)
 
-  //Current version of jsdom does not support validity :(
-  titleInput.simulate('blur', {target: { id: 'title', validity: { valid: false }}})
+  titleInput.simulate('blur', {target: titleInput.instance()})
   titleInput = wrapper.find('TextField#title')
   expect(titleInput.props().error).toBe(true)
 })
@@ -118,28 +130,31 @@ it('validates filename on blur', () => {
       onCancel = { jest.fn() }
     />
   )
-  wrapper.find('form.create-story-form').instance().checkValidity = () => { return true}
+  validForm.mockReturnValue(true)
   let filenameInput = wrapper.find('input#filename')
+  validMock.mockReturnValueOnce(false)
 
   //Current version of jsdom does not support validity :(
-  filenameInput.simulate('blur', {target: { id: 'filename', validity: { valid: false }}})
+  filenameInput.simulate('blur', filenameInput.instance())
   filenameInput = wrapper.find('TextField#filename')
   expect(filenameInput.props().error).toBe(true)
 })
 
-it('calls onCreate callback when create button clicked', () => {
-  const onCreateStub = jest.fn()
+it('displays error when user clicks create', () => {
   const wrapper = mount(
     <CreateStoryForm
-      onCreate = { onCreateStub }
+      onCreate = { jest.fn() }
       onCancel = { jest.fn() }
     />
   )
-
-  wrapper.find('form.create-story-form').instance().checkValidity = () => { return true}
-  wrapper.find('input#filename').simulate('blur', {target: { id: 'filename', validity: { valid: true }}})
+  validMock.mockReturnValue(false)
+  validForm.mockReturnValue(false)
   wrapper.find('Button.create-story-create-button').simulate('click')
-  expect(onCreateStub).toHaveBeenCalled()
+  wrapper.update()
+  let filenameInput = wrapper.find('TextField#filename')
+  expect(filenameInput.props().error).toBe(true)
+  let titleInput = wrapper.find('TextField#title')
+  expect(titleInput.props().error).toBe(true)
 })
 
 it('calls onCancel callback when create button clicked', () => {
