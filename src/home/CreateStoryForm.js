@@ -47,7 +47,10 @@ class CreateStoryForm extends Component {
   }
 
   openDialog() {
-    let filename = dialog.showSaveDialog()
+    //TODO add tests for default filename
+    let filename = dialog.showSaveDialog({
+      defaultPath: `${this.state.title}.json`
+    })
     if( filename === undefined ) return
     this.setState({ filename: filename })
   }

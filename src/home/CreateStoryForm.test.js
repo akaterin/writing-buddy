@@ -41,7 +41,11 @@ it('opens dialog when user clicks on filename', () => {
     />
   )
   wrapper.find('Input#filename').simulate('click')
-  expect(dialog.showSaveDialog).toHaveBeenCalled()
+  expect(dialog.showSaveDialog).toHaveBeenCalledWith({ defaultPath: '.json'})
+
+  wrapper.find('input#title').simulate('change', { target: { value: 'AwesomeStory' } })
+  wrapper.find('Input#filename').simulate('click')
+  expect(dialog.showSaveDialog).toHaveBeenCalledWith({ defaultPath: 'AwesomeStory.json'})
 })
 
 it('opens dialog on keyup', () => {
