@@ -4,6 +4,22 @@ import AddIcon from '@material-ui/icons/Add'
 import ConnectedCreateStory, { CreateStory } from './CreateStory'
 import { Provider } from 'react-redux'
 import store from '../infrastructure/store'
+import { fs } from '../electronRemote'
+
+jest.mock('../electronRemote', () => {
+  return {
+    dialog: {
+      showSaveDialog: jest.fn( () => { return 'DUPA.txt' } )
+    },
+    fs: {
+      writeFile: jest.fn(() => { return true })
+    }
+  }
+})
+
+beforeEach(() => {
+  fs.writeFile.mockClear()
+})
 
 it('renders create story button', () => {
   const wrapper = shallow(<CreateStory />)
@@ -39,6 +55,42 @@ it('adds story to store when user clicks create', () => {
   const state = store.getState();
   expect(state.activeStory.title).toBe('Awesome Story!')
   expect(state.activeStory.filename).toBe('DUPA.txt')
+})
+
+it('saves file on create', () => {
+  const wrapper = mount(
+    <Provider store={store}>
+      <ConnectedCreateStory />
+    </Provider>
+  )
+  wrapper.find('CreateStory').instance()
+    .handleCreateStory({title: 'Awesome Story', filename: 'dupa.txt'})
+
+  expect(fs.writeFile).
+    toHaveBeenCalledWith('dupa.txt', '{"title":"Awesome Story","filename":"dupa.txt"}',
+    expect.anything())
+})
+
+it('handles an error', () => {
+  const wrapper = mount(
+    <Provider store={store}>
+      <ConnectedCreateStory />
+    </Provider>
+  )
+  const createStoryInstance = wrapper.find('CreateStory').instance()
+
+  fs.writeFile.mockImplementation( (filename, content, callback) => {
+    const error = { message: 'Shitty content' }
+    return callback(error)
+  })
+
+  expect( () => {
+    createStoryInstance.handleCreateStory({
+      title: 'Awesome Story',
+      filename: 'dupa.txt'
+    })
+  }).toThrow()
+
 })
 
 

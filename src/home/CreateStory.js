@@ -8,6 +8,7 @@ import Dialog, {
   DialogTitle,
 } from 'material-ui/Dialog';
 import CreateStoryForm from './CreateStoryForm'
+import { fs } from '../electronRemote'
 
 const mapDispatchToProps = dispatch => {
   return {
@@ -36,6 +37,9 @@ export class CreateStory extends Component {
 
   handleCreateStory(story) {
     this.props.createStory(story)
+    fs.writeFile(story.filename, JSON.stringify(story), (error) => {
+      if( error ) throw error
+    })
     this.handleCloseModal()
   }
 
