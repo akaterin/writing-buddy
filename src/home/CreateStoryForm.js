@@ -3,7 +3,6 @@ import TextField from 'material-ui/TextField';
 import Button from 'material-ui/Button'
 import { dialog } from '../electronRemote'
 import PropTypes from 'prop-types'
-import { DialogActions } from 'material-ui/Dialog'
 import './CreateStoryForm.css'
 
 class CreateStoryForm extends Component {
