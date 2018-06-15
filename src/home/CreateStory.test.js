@@ -5,6 +5,7 @@ import ConnectedCreateStory, { CreateStory } from './CreateStory'
 import { Provider } from 'react-redux'
 import store from '../infrastructure/store'
 import { fs } from '../electronRemote'
+import { ADD_ERROR } from '../infrastructure/actionsTypes'
 
 jest.mock('../electronRemote', () => {
   return {
@@ -41,6 +42,10 @@ it('closes modal when user clicks cancel', () => {
 })
 
 it('adds story to store when user clicks create', () => {
+  fs.writeFile.mockImplementation( (filename, content, callback) => {
+    return callback()
+  })
+
   const wrapper = mount(
     <Provider store={store}>
       <ConnectedCreateStory />
@@ -72,6 +77,8 @@ it('saves file on create', () => {
 })
 
 it('handles an error', () => {
+  const dispatchSpy = jest.spyOn(store, 'dispatch')
+
   const wrapper = mount(
     <Provider store={store}>
       <ConnectedCreateStory />
@@ -84,13 +91,11 @@ it('handles an error', () => {
     return callback(error)
   })
 
-  expect( () => {
-    createStoryInstance.handleCreateStory({
-      title: 'Awesome Story',
-      filename: 'dupa.txt'
-    })
-  }).toThrow()
+  createStoryInstance.handleCreateStory({title: 'Awesome Story', filename: 'dupa.txt'})
 
+  expect(dispatchSpy).toHaveBeenCalledTimes(1)
+  const call = dispatchSpy.mock.calls[0][0]
+  expect(call.type).toEqual(ADD_ERROR)
 })
 
 

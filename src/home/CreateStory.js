@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import { connect } from "react-redux"
-import { createStory } from '../infrastructure/actions'
+import { createStory, addError } from '../infrastructure/actions'
 import Button from 'material-ui/Button'
 import AddIcon from '@material-ui/icons/Add'
 import Dialog, {
@@ -12,7 +12,8 @@ import { fs } from '../electronRemote'
 
 const mapDispatchToProps = dispatch => {
   return {
-    createStory: story => dispatch(createStory(story))
+    createStory: story => dispatch(createStory(story)),
+    addError: error => dispatch(addError(error))
   };
 };
 
@@ -36,9 +37,12 @@ export class CreateStory extends Component {
   }
 
   handleCreateStory(story) {
-    this.props.createStory(story)
     fs.writeFile(story.filename, JSON.stringify(story), (error) => {
-      if( error ) throw error
+      if( error ){
+        this.props.addError('File save failed. Please try again.')
+      }else{
+        this.props.createStory(story)
+      }
     })
     this.handleCloseModal()
   }
